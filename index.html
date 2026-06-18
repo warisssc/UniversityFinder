@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>university finder.</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,16 +11,16 @@
 
     <style>
         :root {
-            --bg-color: #f8fafc; 
-            --card-bg: #f0f9ff; 
-            --card-hover: #e0f2fe; 
+            --bg-color: #fdfdfd; 
+            --card-bg: #f4f9fc; 
+            --card-hover: #eaf4fb; 
             --nav-bg: #ffffff;
-            --text-dark: #0f172a;
-            --text-muted: #64748b;
+            --text-dark: #111827;
+            --text-muted: #6b7280;
             --accent-drop: #38bdf8; 
-            --accent-dark: #1e293b;
+            --accent-dark: #1f2937;
             --accent-red: #ef4444;
-            --shadow-soft: 0 10px 30px rgba(56, 189, 248, 0.12);
+            --shadow-soft: 0 10px 30px rgba(56, 189, 248, 0.08);
             --font-heading: 'Fraunces', serif;
             --font-body: 'Plus Jakarta Sans', sans-serif;
         }
@@ -38,7 +38,7 @@
             align-items: center;
         }
 
-        .blob { position: fixed; filter: blur(70px); z-index: -1; border-radius: 50%; animation: float 14s infinite alternate ease-in-out; opacity: 0.3; }
+        .blob { position: fixed; filter: blur(80px); z-index: -1; border-radius: 50%; animation: float 14s infinite alternate ease-in-out; opacity: 0.2; }
         .blob-1 { top: 10%; left: 10%; width: 30vw; height: 30vw; background: #bae6fd; } 
         .blob-2 { bottom: 20%; right: 10%; width: 40vw; height: 40vw; background: #e0f2fe; animation-delay: -4s; animation-direction: alternate-reverse; }
 
@@ -47,51 +47,55 @@
             100% { transform: translate(3vw, 3vh) scale(1.05); }
         }
 
+        /* --- THE SHARP SVG RAINDROP MASCOT --- */
         #intro-bg {
             position: fixed; inset: 0; background: var(--bg-color); z-index: 1000;
-            transition: opacity 1.5s ease; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 1s ease; display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         #intro-bg.hidden-bg { opacity: 0; pointer-events: none; }
 
         #mascot {
-            position: fixed; top: 38%; left: 50%; 
-            transform: translate(-50%, -50%) scale(2.8); 
+            position: fixed; top: 30%; left: 50%; 
+            transform: translate(-50%, -50%) scale(2.2); 
             z-index: 1002;
-            transition: all 2s cubic-bezier(0.25, 1, 0.3, 1);
+            transition: all 1.2s cubic-bezier(0.25, 1, 0.3, 1);
+            filter: drop-shadow(0 10px 15px rgba(56, 189, 248, 0.15));
         }
 
         #mascot.nav-mode {
             top: 25px; left: 35px; 
-            transform: translate(0, 0) scale(1.2);
+            transform: translate(0, 0) scale(1);
             animation: mascotBob 4s ease-in-out infinite alternate;
+            filter: drop-shadow(0 4px 6px rgba(56, 189, 248, 0.1));
         }
 
         @keyframes mascotBob {
-            0% { transform: translate(0, 0) scale(1.2) rotate(-2deg); }
-            100% { transform: translate(0, 6px) scale(1.2) rotate(2deg); }
+            0% { transform: translate(0, 0) scale(1) rotate(-2deg); }
+            100% { transform: translate(0, 6px) scale(1) rotate(2deg); }
         }
 
         #intro-content {
-            position: fixed; top: 58%; left: 50%; transform: translate(-50%, 0);
-            text-align: center; z-index: 1001; width: 90%; max-width: 550px;
-            transition: opacity 1s ease, transform 1.2s ease;
+            position: fixed; top: 52%; left: 50%; transform: translate(-50%, 0);
+            text-align: center; z-index: 1001; width: 90%; max-width: 600px;
+            transition: opacity 0.6s ease, transform 0.8s ease;
         }
         #intro-content.hidden-content { opacity: 0; transform: translate(-50%, 15px); pointer-events: none; }
 
-        #intro-content h1 { font-family: var(--font-heading); font-size: 46px; color: var(--text-dark); margin-bottom: 15px; letter-spacing: -1px; }
-        #intro-content p { font-size: 16px; color: var(--text-muted); line-height: 1.6; font-weight: 400; margin-bottom: 35px; }
+        #intro-content h1 { font-family: var(--font-heading); font-size: 52px; color: var(--text-dark); margin-bottom: 12px; letter-spacing: -1.5px; }
+        #intro-content p { font-size: 15px; color: var(--text-muted); line-height: 1.6; font-weight: 400; margin-bottom: 35px; padding: 0 20px;}
         
         .start-btn {
-            background: var(--text-dark); color: #fff; border: none; padding: 16px 45px; border-radius: 40px;
-            font-size: 15px; font-weight: 500; cursor: pointer; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+            background: var(--text-dark); color: #fff; border: none; padding: 14px 32px; border-radius: 40px;
+            font-size: 15px; font-weight: 500; cursor: pointer; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease; font-family: var(--font-body);
         }
-        .start-btn:hover { background: var(--accent-drop); transform: translateY(-2px); box-shadow: 0 12px 25px rgba(56, 189, 248, 0.3); }
+        .start-btn:hover { background: #000; transform: translateY(-2px); box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2); }
 
+        /* --- MAIN APP --- */
         #main-app {
             width: 100%; display: flex; flex-direction: column; align-items: center;
             opacity: 0; transform: translateY(15px); pointer-events: none;
-            transition: opacity 1.5s ease 0.6s, transform 1.5s ease 0.6s;
+            transition: opacity 1s ease 0.4s, transform 1s ease 0.4s;
         }
         #main-app.visible-app { opacity: 1; transform: translateY(0); pointer-events: auto; }
 
@@ -110,8 +114,8 @@
         .nav-btn.active { color: #fff; background: var(--text-dark); }
 
         .hero { text-align: center; margin: 40px 20px 10px 20px; max-width: 600px; }
-        .hero h1 { font-family: var(--font-heading); font-size: 42px; color: var(--text-dark); margin-bottom: 12px; letter-spacing: -1px; }
-        .hero p { font-size: 16px; color: var(--text-muted); line-height: 1.6; font-weight: 400; }
+        .hero h1 { font-family: var(--font-heading); font-size: 38px; color: var(--text-dark); margin-bottom: 12px; letter-spacing: -1px; }
+        .hero p { font-size: 15px; color: var(--text-muted); line-height: 1.6; font-weight: 400; }
 
         .container { 
             width: 100%; max-width: 950px; display: flex; flex-direction: column; 
@@ -120,14 +124,16 @@
         
         .hidden { display: none !important; }
 
+        /* Compare Board */
         .board { 
-            display: flex; width: 100%; gap: 30px; background: transparent; 
+            display: flex; width: 100%; gap: 20px; background: transparent; 
             perspective: 1200px; min-height: 520px; margin-top: 20px; position: relative;
         }
         
         .card { 
             flex: 1; position: relative; background-color: transparent; display: flex; flex-direction: column;
             align-items: center; cursor: pointer; transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease;
+            width: 50%; /* Strictly assign half width map spacing */
         }
 
         .card:hover .card-content { background-color: var(--card-hover); transform: translateY(-4px); box-shadow: 0 15px 35px rgba(56, 189, 248, 0.15); }
@@ -141,28 +147,29 @@
 
         .card-content {
             background-color: var(--card-bg); width: 100%; border-radius: 28px;
-            padding: 60px 30px 30px 30px; box-shadow: var(--shadow-soft); border: 1px solid rgba(255,255,255,0.8);
+            padding: 60px 25px 25px 25px; box-shadow: var(--shadow-soft); border: 1px solid rgba(255,255,255,0.8);
             display: flex; flex-direction: column; transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
         }
         
         .card-content h2 { 
-            color: var(--text-dark); margin-bottom: 25px; font-size: 24px; font-family: var(--font-heading);
-            font-weight: 600; letter-spacing: -0.5px; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
+            color: var(--text-dark); margin-bottom: 20px; font-size: 22px; font-family: var(--font-heading);
+            font-weight: 600; letter-spacing: -0.5px; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;
         }
         
         .card-content h2 span { 
-            font-family: var(--font-body); font-weight: 600; font-size: 12px; color: var(--accent-drop); 
-            background: #ffffff; padding: 4px 12px; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            font-family: var(--font-body); font-weight: 600; font-size: 11px; color: var(--accent-drop); 
+            background: #ffffff; padding: 4px 10px; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
             white-space: nowrap;
         }
         
-        .bio-metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px 20px; width: 100%; }
+        .bio-metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 15px; width: 100%; }
         
-        .metric-item { display: flex; flex-direction: column; border-bottom: 1px solid rgba(0,0,0,0.04); padding-bottom: 8px; }
-        .metric-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; }
-        .metric-value { font-size: 15px; font-weight: 600; color: var(--text-dark); }
+        .metric-item { display: flex; flex-direction: column; border-bottom: 1px solid rgba(0,0,0,0.04); padding-bottom: 6px; }
+        .metric-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 2px; font-weight: 600; }
+        .metric-value { font-size: 14px; font-weight: 600; color: var(--text-dark); word-break: break-word; }
 
-        .controls { display: flex; justify-content: center; align-items: center; gap: 25px; margin-top: 50px; z-index: 50; }
+        .controls { display: flex; justify-content: center; align-items: center; gap: 25px; margin-top: 40px; z-index: 50; }
         
         .action-button { 
             width: 65px; height: 65px; border-radius: 50%; background: #ffffff; border: 1px solid rgba(0,0,0,0.03); 
@@ -182,14 +189,15 @@
         .btn-skip-center:hover { background: #fef2f2; border-color: #fca5a5; }
         .btn-skip-center:hover svg { stroke: var(--accent-red); }
 
+        /* FIXED TRANSITION LAYOUT WIDTH TARGETS FOR SIDE BY SIDE DEPLOYMENT */
         @keyframes swipeLeft { 0% { transform: translate(0, 0) rotate(0deg); opacity: 1; } 100% { transform: translate(-60vw, 5vh) rotate(-15deg); opacity: 0; } }
         @keyframes swipeRight { 0% { transform: translate(0, 0) rotate(0deg); opacity: 1; } 100% { transform: translate(60vw, 5vh) rotate(15deg); opacity: 0; } }
         @keyframes dropDown { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(20vh) scale(0.95); opacity: 0; filter: blur(4px); } }
 
-        .anim-swipe-left { animation: swipeLeft 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards !important; position: absolute; left: 0; width: calc(50% - 15px); pointer-events: none; z-index: 100; }
-        .anim-swipe-right { animation: swipeRight 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards !important; position: absolute; right: 0; width: calc(50% - 15px); pointer-events: none; z-index: 100; }
-        .anim-drop-left { animation: dropDown 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards !important; position: absolute; left: 0; width: calc(50% - 15px); pointer-events: none; z-index: 99; }
-        .anim-drop-right { animation: dropDown 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards !important; position: absolute; right: 0; width: calc(50% - 15px); pointer-events: none; z-index: 99; }
+        .anim-swipe-left { animation: swipeLeft 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards !important; position: absolute; left: 0; width: calc(50% - 10px); pointer-events: none; z-index: 100; }
+        .anim-swipe-right { animation: swipeRight 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards !important; position: absolute; right: 0; width: calc(50% - 10px); pointer-events: none; z-index: 100; }
+        .anim-drop-left { animation: dropDown 1s cubic-bezier(0.25, 1, 0.5, 1) forwards !important; position: absolute; left: 0; width: calc(50% - 10px); pointer-events: none; z-index: 99; }
+        .anim-drop-right { animation: dropDown 1s cubic-bezier(0.25, 1, 0.5, 1) forwards !important; position: absolute; right: 0; width: calc(50% - 10px); pointer-events: none; z-index: 99; }
 
         .saved-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; width: 100%; margin: 30px auto; }
         
@@ -200,7 +208,6 @@
         }
         
         .saved-card:hover { transform: translateY(-4px); box-shadow: 0 15px 30px rgba(0,0,0,0.06); }
-        
         .saved-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; width: 100%; }
         
         .saved-card .saved-logo { 
@@ -226,34 +233,95 @@
         }
         .clear-btn:hover { background: #fef2f2; color: var(--accent-red); border-color: #fca5a5; }
 
-        /* --- MOBILE RESPONSIVENESS FIX --- */
+        /* --- THE MOBILE COMPACTNESS REWRITE MAPPING GRID TARGETS --- */
         @media (max-width: 768px) {
-            .board {
-                flex-direction: column;
-                gap: 70px; /* Space for the overlapping logo of the second card */
-            }
-            .card { width: 100%; }
-            .hero { margin-top: 80px; } /* Clears the mascot */
+            .hero { margin-top: 75px; padding: 0 10px; }
+            .hero h1 { font-size: 32px; }
+            .hero p { font-size: 14px; }
             
             #mascot.nav-mode {
-                top: 20px; left: 20px;
-                transform: scale(0.9);
-                animation: mascotBobMobile 4s ease-in-out infinite alternate;
+                top: 15px; left: 15px;
+                transform: scale(0.75);
+                animation: mascotBobMobile 4s infinite alternate ease-in-out;
             }
-
             @keyframes mascotBobMobile {
-                0% { transform: translate(0, 0) scale(0.9) rotate(-2deg); }
-                100% { transform: translate(0, 4px) scale(0.9) rotate(2deg); }
+                0% { transform: scale(0.75) rotate(-2deg); }
+                100% { transform: translateY(3px) scale(0.75) rotate(2deg); }
             }
 
-            #intro-content h1 { font-size: 36px; }
-            .controls { margin-top: 30px; gap: 15px; }
-            .btn-skip-center { width: 70px; height: 70px; }
-            
-            /* Overwrite position absolute for swipe on mobile to prevent squishing */
-            .anim-swipe-left, .anim-swipe-right, .anim-drop-left, .anim-drop-right {
-                width: 100%; left: 0; right: 0;
+            /* Force side-by-side rows with compact rendering boundaries */
+            .board {
+                flex-direction: row !important;
+                gap: 12px;
+                padding: 10px;
+                min-height: 420px;
             }
+            
+            .card {
+                width: 50% !important;
+            }
+
+            .card-logo {
+                width: 64px;
+                height: 64px;
+                margin-bottom: -32px;
+            }
+
+            .card-content {
+                padding: 45px 14px 15px 14px;
+                border-radius: 20px;
+            }
+
+            .card-content h2 {
+                font-size: 16px;
+                margin-bottom: 12px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+
+            .card-content h2 span {
+                font-size: 9px;
+                padding: 2px 6px;
+            }
+
+            .bio-metrics {
+                grid-template-columns: 1fr; /* Single column inside each mobile card */
+                gap: 8px;
+            }
+
+            .metric-item {
+                padding-bottom: 3px;
+            }
+
+            .metric-label {
+                font-size: 8px;
+                margin-bottom: 0px;
+            }
+
+            .metric-value {
+                font-size: 12px;
+            }
+
+            .controls {
+                margin-top: 20px;
+                gap: 15px;
+            }
+
+            .action-button {
+                width: 55px;
+                height: 55px;
+            }
+            .btn-skip-center {
+                width: 65px;
+                height: 65px;
+            }
+
+            /* Prevent layout breakages across animation states */
+            .anim-swipe-left { animation: swipeLeft 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards !important; position: absolute; left: 0; width: calc(50% - 6px); }
+            .anim-swipe-right { animation: swipeRight 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards !important; position: absolute; right: 0; width: calc(50% - 6px); }
+            .anim-drop-left { animation: dropDown 1s cubic-bezier(0.25, 1, 0.5, 1) forwards !important; position: absolute; left: 0; width: calc(50% - 6px); }
+            .anim-drop-right { animation: dropDown 1s cubic-bezier(0.25, 1, 0.5, 1) forwards !important; position: absolute; right: 0; width: calc(50% - 6px); }
         }
 
     </style>
@@ -292,8 +360,7 @@
             </div>
 
             <div class="board" id="board">
-                <!-- Cards dynamically injected -->
-            </div>
+                </div>
 
             <div class="controls" id="controls">
                 <button class="action-button btn-keep-left" onclick="processChoice(1)" title="Keep Left">
@@ -325,7 +392,7 @@
             setTimeout(() => {
                 document.getElementById('intro-bg').classList.add('hidden-bg');
                 document.getElementById('main-app').classList.add('visible-app');
-            }, 800); 
+            }, 500);
         }
 
         let db = [
@@ -522,7 +589,6 @@
         }
 
         let savedColleges = JSON.parse(localStorage.getItem('myUnis')) || [];
-        // Leave seenColleges empty on load so intro always plays!
         let seenColleges = []; 
         let currentPair = [];
 
