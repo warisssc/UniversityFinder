@@ -11,17 +11,16 @@
 
     <style>
         :root {
-            /* Lonely Leaf Inspired Palette with Soft Blue */
-            --bg-color: #fdfdfd; 
-            --card-bg: #f4f9fc; 
-            --card-hover: #eaf4fb; 
+            --bg-color: #f8fafc; 
+            --card-bg: #f0f9ff; 
+            --card-hover: #e0f2fe; 
             --nav-bg: #ffffff;
-            --text-dark: #111827;
-            --text-muted: #6b7280;
-            --accent-drop: #38bdf8; /* Sharp, vibrant water drop blue */
-            --accent-dark: #1f2937;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --accent-drop: #38bdf8; 
+            --accent-dark: #1e293b;
             --accent-red: #ef4444;
-            --shadow-soft: 0 10px 30px rgba(56, 189, 248, 0.08);
+            --shadow-soft: 0 10px 30px rgba(56, 189, 248, 0.12);
             --font-heading: 'Fraunces', serif;
             --font-body: 'Plus Jakarta Sans', sans-serif;
         }
@@ -39,8 +38,7 @@
             align-items: center;
         }
 
-        /* Extremely subtle background dust */
-        .blob { position: fixed; filter: blur(80px); z-index: -1; border-radius: 50%; animation: float 14s infinite alternate ease-in-out; opacity: 0.2; }
+        .blob { position: fixed; filter: blur(70px); z-index: -1; border-radius: 50%; animation: float 14s infinite alternate ease-in-out; opacity: 0.3; }
         .blob-1 { top: 10%; left: 10%; width: 30vw; height: 30vw; background: #bae6fd; } 
         .blob-2 { bottom: 20%; right: 10%; width: 40vw; height: 40vw; background: #e0f2fe; animation-delay: -4s; animation-direction: alternate-reverse; }
 
@@ -49,56 +47,51 @@
             100% { transform: translate(3vw, 3vh) scale(1.05); }
         }
 
-        /* --- THE SHARP SVG RAINDROP MASCOT --- */
         #intro-bg {
             position: fixed; inset: 0; background: var(--bg-color); z-index: 1000;
-            transition: opacity 1s ease; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 1.5s ease; display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         #intro-bg.hidden-bg { opacity: 0; pointer-events: none; }
 
         #mascot {
-            position: fixed; top: 30%; left: 50%; 
-            transform: translate(-50%, -50%) scale(2.2); 
+            position: fixed; top: 38%; left: 50%; 
+            transform: translate(-50%, -50%) scale(2.8); 
             z-index: 1002;
-            transition: all 1.2s cubic-bezier(0.25, 1, 0.3, 1);
-            filter: drop-shadow(0 10px 15px rgba(56, 189, 248, 0.15));
+            transition: all 2s cubic-bezier(0.25, 1, 0.3, 1);
         }
 
         #mascot.nav-mode {
             top: 25px; left: 35px; 
-            transform: translate(0, 0) scale(1);
+            transform: translate(0, 0) scale(1.2);
             animation: mascotBob 4s ease-in-out infinite alternate;
-            filter: drop-shadow(0 4px 6px rgba(56, 189, 248, 0.1));
         }
 
         @keyframes mascotBob {
-            0% { transform: translate(0, 0) scale(1) rotate(-2deg); }
-            100% { transform: translate(0, 6px) scale(1) rotate(2deg); }
+            0% { transform: translate(0, 0) scale(1.2) rotate(-2deg); }
+            100% { transform: translate(0, 6px) scale(1.2) rotate(2deg); }
         }
 
-        /* Intro Screen Content matching Image 11 exactly */
         #intro-content {
-            position: fixed; top: 52%; left: 50%; transform: translate(-50%, 0);
-            text-align: center; z-index: 1001; width: 90%; max-width: 600px;
-            transition: opacity 0.6s ease, transform 0.8s ease;
+            position: fixed; top: 58%; left: 50%; transform: translate(-50%, 0);
+            text-align: center; z-index: 1001; width: 90%; max-width: 550px;
+            transition: opacity 1s ease, transform 1.2s ease;
         }
         #intro-content.hidden-content { opacity: 0; transform: translate(-50%, 15px); pointer-events: none; }
 
-        #intro-content h1 { font-family: var(--font-heading); font-size: 52px; color: var(--text-dark); margin-bottom: 12px; letter-spacing: -1.5px; }
-        #intro-content p { font-size: 15px; color: var(--text-muted); line-height: 1.6; font-weight: 400; margin-bottom: 35px; padding: 0 20px;}
+        #intro-content h1 { font-family: var(--font-heading); font-size: 46px; color: var(--text-dark); margin-bottom: 15px; letter-spacing: -1px; }
+        #intro-content p { font-size: 16px; color: var(--text-muted); line-height: 1.6; font-weight: 400; margin-bottom: 35px; }
         
         .start-btn {
-            background: var(--text-dark); color: #fff; border: none; padding: 14px 32px; border-radius: 40px;
-            font-size: 15px; font-weight: 500; cursor: pointer; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-            transition: all 0.3s ease; font-family: var(--font-body);
+            background: var(--text-dark); color: #fff; border: none; padding: 16px 45px; border-radius: 40px;
+            font-size: 15px; font-weight: 500; cursor: pointer; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
         }
-        .start-btn:hover { background: #000; transform: translateY(-2px); box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2); }
+        .start-btn:hover { background: var(--accent-drop); transform: translateY(-2px); box-shadow: 0 12px 25px rgba(56, 189, 248, 0.3); }
 
-        /* --- MAIN APP --- */
         #main-app {
             width: 100%; display: flex; flex-direction: column; align-items: center;
             opacity: 0; transform: translateY(15px); pointer-events: none;
-            transition: opacity 1s ease 0.4s, transform 1s ease 0.4s;
+            transition: opacity 1.5s ease 0.6s, transform 1.5s ease 0.6s;
         }
         #main-app.visible-app { opacity: 1; transform: translateY(0); pointer-events: auto; }
 
@@ -117,8 +110,8 @@
         .nav-btn.active { color: #fff; background: var(--text-dark); }
 
         .hero { text-align: center; margin: 40px 20px 10px 20px; max-width: 600px; }
-        .hero h1 { font-family: var(--font-heading); font-size: 38px; color: var(--text-dark); margin-bottom: 12px; letter-spacing: -1px; }
-        .hero p { font-size: 15px; color: var(--text-muted); line-height: 1.6; font-weight: 400; }
+        .hero h1 { font-family: var(--font-heading); font-size: 42px; color: var(--text-dark); margin-bottom: 12px; letter-spacing: -1px; }
+        .hero p { font-size: 16px; color: var(--text-muted); line-height: 1.6; font-weight: 400; }
 
         .container { 
             width: 100%; max-width: 950px; display: flex; flex-direction: column; 
@@ -127,7 +120,6 @@
         
         .hidden { display: none !important; }
 
-        /* Compare Board */
         .board { 
             display: flex; width: 100%; gap: 30px; background: transparent; 
             perspective: 1200px; min-height: 520px; margin-top: 20px; position: relative;
@@ -164,7 +156,6 @@
             white-space: nowrap;
         }
         
-        /* CLEAN GRID DATA DISPLAY */
         .bio-metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px 20px; width: 100%; }
         
         .metric-item { display: flex; flex-direction: column; border-bottom: 1px solid rgba(0,0,0,0.04); padding-bottom: 8px; }
@@ -191,17 +182,15 @@
         .btn-skip-center:hover { background: #fef2f2; border-color: #fca5a5; }
         .btn-skip-center:hover svg { stroke: var(--accent-red); }
 
-        /* ABSOLUTE SWIPE ANIMATIONS (Slow & Float-like) */
         @keyframes swipeLeft { 0% { transform: translate(0, 0) rotate(0deg); opacity: 1; } 100% { transform: translate(-60vw, 5vh) rotate(-15deg); opacity: 0; } }
         @keyframes swipeRight { 0% { transform: translate(0, 0) rotate(0deg); opacity: 1; } 100% { transform: translate(60vw, 5vh) rotate(15deg); opacity: 0; } }
         @keyframes dropDown { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(20vh) scale(0.95); opacity: 0; filter: blur(4px); } }
 
-        .anim-swipe-left { animation: swipeLeft 1.2s cubic-bezier(0.33, 1, 0.68, 1) forwards !important; position: absolute; left: 0; width: calc(50% - 15px); pointer-events: none; z-index: 100; }
-        .anim-swipe-right { animation: swipeRight 1.2s cubic-bezier(0.33, 1, 0.68, 1) forwards !important; position: absolute; right: 0; width: calc(50% - 15px); pointer-events: none; z-index: 100; }
-        .anim-drop-left { animation: dropDown 1s cubic-bezier(0.33, 1, 0.68, 1) forwards !important; position: absolute; left: 0; width: calc(50% - 15px); pointer-events: none; z-index: 99; }
-        .anim-drop-right { animation: dropDown 1s cubic-bezier(0.33, 1, 0.68, 1) forwards !important; position: absolute; right: 0; width: calc(50% - 15px); pointer-events: none; z-index: 99; }
+        .anim-swipe-left { animation: swipeLeft 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards !important; position: absolute; left: 0; width: calc(50% - 15px); pointer-events: none; z-index: 100; }
+        .anim-swipe-right { animation: swipeRight 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards !important; position: absolute; right: 0; width: calc(50% - 15px); pointer-events: none; z-index: 100; }
+        .anim-drop-left { animation: dropDown 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards !important; position: absolute; left: 0; width: calc(50% - 15px); pointer-events: none; z-index: 99; }
+        .anim-drop-right { animation: dropDown 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards !important; position: absolute; right: 0; width: calc(50% - 15px); pointer-events: none; z-index: 99; }
 
-        /* Shortlist Mode Styling */
         .saved-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; width: 100%; margin: 30px auto; }
         
         .saved-card { 
@@ -237,6 +226,36 @@
         }
         .clear-btn:hover { background: #fef2f2; color: var(--accent-red); border-color: #fca5a5; }
 
+        /* --- MOBILE RESPONSIVENESS FIX --- */
+        @media (max-width: 768px) {
+            .board {
+                flex-direction: column;
+                gap: 70px; /* Space for the overlapping logo of the second card */
+            }
+            .card { width: 100%; }
+            .hero { margin-top: 80px; } /* Clears the mascot */
+            
+            #mascot.nav-mode {
+                top: 20px; left: 20px;
+                transform: scale(0.9);
+                animation: mascotBobMobile 4s ease-in-out infinite alternate;
+            }
+
+            @keyframes mascotBobMobile {
+                0% { transform: translate(0, 0) scale(0.9) rotate(-2deg); }
+                100% { transform: translate(0, 4px) scale(0.9) rotate(2deg); }
+            }
+
+            #intro-content h1 { font-size: 36px; }
+            .controls { margin-top: 30px; gap: 15px; }
+            .btn-skip-center { width: 70px; height: 70px; }
+            
+            /* Overwrite position absolute for swipe on mobile to prevent squishing */
+            .anim-swipe-left, .anim-swipe-right, .anim-drop-left, .anim-drop-right {
+                width: 100%; left: 0; right: 0;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -244,19 +263,15 @@
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>
 
-    <!-- THE PURE SVG RAINDROP MASCOT (Razor Sharp, Lonely Leaf Smile) -->
     <div id="mascot">
         <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Perfect Teardrop Shape -->
             <path d="M12 2C12 2 5 9 5 15C5 18.866 7.686 22 12 22C16.314 22 19 18.866 19 15C19 9 12 2 12 2Z" fill="var(--accent-drop)"/>
-            <!-- Lonely Leaf Style Face -->
             <circle cx="9.5" cy="14.5" r="1.1" fill="#1e293b"/>
             <circle cx="14.5" cy="14.5" r="1.1" fill="#1e293b"/>
             <path d="M10.5 16.5C11 17.2 13 17.2 13.5 16.5" stroke="#1e293b" stroke-width="1.2" stroke-linecap="round" fill="none"/>
         </svg>
     </div>
 
-    <!-- INTRO CUTSCENE -->
     <div id="intro-bg"></div>
     <div id="intro-content">
         <h1>university finder.</h1>
@@ -264,14 +279,12 @@
         <button class="start-btn" onclick="startApp()">Start your journey</button>
     </div>
 
-    <!-- MAIN APP WRAPPER -->
     <div id="main-app">
         <nav>
             <button id="btn-compare" class="nav-btn active" onclick="switchTab('compare')">Compare</button>
             <button id="btn-saved" class="nav-btn" onclick="switchTab('saved')">Shortlist</button>
         </nav>
 
-        <!-- MODE 1: COMPARE -->
         <div id="compare-view" class="container">
             <div class="hero" id="hero-text">
                 <h1>Find your match.</h1>
@@ -295,7 +308,6 @@
             </div>
         </div>
 
-        <!-- MODE 2: SAVED LIST -->
         <div id="saved-view" class="container hidden">
             <div class="hero">
                 <h1>Your Shortlist.</h1>
@@ -307,14 +319,13 @@
     </div>
 
     <script>
-        // Start app with a gentle fade
         function startApp() {
             document.getElementById('intro-content').classList.add('hidden-content');
             document.getElementById('mascot').classList.add('nav-mode');
             setTimeout(() => {
                 document.getElementById('intro-bg').classList.add('hidden-bg');
                 document.getElementById('main-app').classList.add('visible-app');
-            }, 500);
+            }, 800); 
         }
 
         let db = [
@@ -511,7 +522,7 @@
         }
 
         let savedColleges = JSON.parse(localStorage.getItem('myUnis')) || [];
-        // Intentionally skipping loading seenColleges so the intro plays every single time!
+        // Leave seenColleges empty on load so intro always plays!
         let seenColleges = []; 
         let currentPair = [];
 
@@ -689,10 +700,8 @@
             document.getElementById(`btn-${tab}`).classList.add('active');
         }
 
-        // Initialize state
         renderCompare();
         renderSaved();
-        
     </script>
 </body>
 </html>
