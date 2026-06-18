@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniMatch — Mascot Edition</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #f8fafc; 
+            --card-bg: #e0f2fe; 
+            --card-hover: #dbeafe; 
+            --nav-bg: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #475569;
+            --accent-blue: #0ea5e9;
+            --accent-red: #ef4444;
+            --shadow-soft: 0 10px 30px rgba(2, 132, 199, 0.08);
+            --font-heading: 'Fraunces', serif;
+            --font-body: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-dark); 
+            font-family: var(--font-body);
+            min-height: 100vh; 
+            overflow-x: hidden; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Abstract soft background blobs */
+        .blob { position: fixed; filter: blur(80px); z-index: -1; border-radius: 50%; animation: float 14s infinite alternate ease-in-out; opacity: 0.4; }
+        .blob-1 { top: -10%; left: -10%; width: 40vw; height: 40vw; background: #bae6fd; } 
+        .blob-2 { bottom: 10%; right: -10%; width: 50vw; height: 50vw; background: #e0f2fe; animation-delay: -4s; animation-direction: alternate-reverse; }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(5vw, 5vh) scale(1.1); }
+        }
+
+        /* --- CUTSCENE & MASCOT STYLING --- */
+        #intro-bg {
+            position: fixed; inset: 0; background: var(--bg-color); z-index: 1000;
+            transition: opacity 0.8s ease; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        #intro-bg.hidden-bg { opacity: 0; pointer-events: none; }
+
+        /* The Mascot SVG Container */
+        #mascot {
+            position: fixed; top: 38%; left: 50%; 
+            transform: translate(-50%, -50%) scale(3.5); /* Starts big in the center */
+            z-index: 1002;
+            transition: all 1s cubic-bezier(0.25, 1, 0.3, 1);
+            filter: drop-shadow(0 10px 15px rgba(14, 165, 233, 0.3));
+        }
+
+        /* Where the mascot flies to after clicking start */
+        #mascot.nav-mode {
+            top: 25px; left: 30px; 
+            transform: translate(0, 0) scale(1.2);
+            animation: mascotBob 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes mascotBob {
+            0% { transform: translate(0, 0) scale(1.2); }
+            100% { transform: translate(0, 8px) scale(1.2); }
+        }
+
+        /* The Intro Text & Button */
+        #intro-content {
+            position: fixed; top: 60%; left: 50%; transform: translate(-50%, 0);
+            text-align: center; z-index: 1001; width: 90%; max-width: 500px;
+            transition: opacity 0.4s ease, transform 0.6s ease;
+        }
+        #intro-content.hidden-content { opacity: 0; transform: translate(-50%, 20px); pointer-events: none; }
+
+        #intro-content h1 { font-family: var(--font-heading); font-size: 38px; color: var(--text-dark); margin-bottom: 12px; letter-spacing: -0.5px; }
+        #intro-content p { font-size: 16px; color: var(--text-muted); line-height: 1.6; font-weight: 500; margin-bottom: 30px; }
+        
+        .start-btn {
+            background: var(--accent-blue); color: #fff; border: none; padding: 16px 40px; border-radius: 40px;
+            font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 8px 20px rgba(14, 165, 233, 0.3);
+            transition: all 0.3s ease;
+        }
+        .start-btn:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 12px 25px rgba(14, 165, 233, 0.4); }
+
+        /* --- MAIN APP LAYOUT (Hidden Initially) --- */
+        #main-app {
+            width: 100%; display: flex; flex-direction: column; align-items: center;
+            opacity: 0; transform: translateY(20px); pointer-events: none;
+            transition: opacity 0.8s ease 0.3s, transform 0.8s ease 0.3s;
+        }
+        #main-app.visible-app { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+        /* Top Pill Navigation */
+        nav { 
+            margin-top: 25px; background: var(--nav-bg); padding: 10px 15px;
+            border-radius: 40px; display: inline-flex; gap: 10px; z-index: 100;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.02);
+        }
+        
+        .nav-btn { 
+            background-color: transparent; color: var(--text-muted); border: none; 
+            font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; 
+            padding: 8px 20px; border-radius: 30px;
+        }
+        .nav-btn:hover { color: var(--text-dark); background: #f1f5f9; }
+        .nav-btn.active { color: #fff; background: var(--text-dark); }
+
+        .hero { text-align: center; margin: 30px 20px 10px 20px; max-width: 600px; }
+        .hero h1 { font-family: var(--font-heading); font-size: 38px; color: var(--text-dark); margin-bottom: 10px; letter-spacing: -1px; }
+        .hero p { font-size: 15px; color: var(--text-muted); line-height: 1.6; font-weight: 500; }
+
+        .container { 
+            width: 100%; max-width: 900px; display: flex; flex-direction: column; 
+            align-items: center; position: relative; padding: 0 20px 100px 20px;
+        }
+        
+        .hidden { display: none !important; }
+
+        /* Compare Board */
+        .board { 
+            display: flex; width: 100%; gap: 30px; background: transparent; 
+            perspective: 1000px; min-height: 480px; margin-top: 15px;
+        }
+        
+        /* Floating Transparent Wrapper for Logo + Content */
+        .card { 
+            flex: 1; position: relative; background-color: transparent; display: flex; flex-direction: column;
+            align-items: center; cursor: pointer; transition: transform 0.9s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s ease;
+        }
+
+        .card:hover .card-content { background-color: var(--card-hover); transform: translateY(-4px); box-shadow: 0 15px 35px rgba(2, 132, 199, 0.12); }
+
+        /* Floating Logo Styling */
+        .card-logo {
+            width: 110px; height: 110px; border-radius: 50%; object-fit: contain; background-color: #ffffff;
+            border: 4px solid var(--bg-color); box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            z-index: 10; margin-bottom: -55px; position: relative; transition: transform 0.3s ease;
+        }
+        .card:hover .card-logo { transform: translateY(-4px) scale(1.02); }
+
+        /* Organic Bubble Shape for Content */
+        .card-content {
+            background-color: var(--card-bg); width: 100%; border-radius: 40px 12px 40px 12px;
+            padding: 70px 30px 30px 30px; box-shadow: var(--shadow-soft); border: 1px solid rgba(255,255,255,0.6);
+            display: flex; flex-direction: column; transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card-content h2 { 
+            color: var(--text-dark); margin-bottom: 25px; font-size: 26px; 
+            font-weight: 700; letter-spacing: -0.5px; display: flex; 
+            align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; 
+        }
+        
+        .card-content h2 span { 
+            font-weight: 700; font-size: 13px; color: var(--accent-blue); 
+            background: #ffffff; padding: 6px 14px; border-radius: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .bio-metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 15px; width: 100%; }
+        
+        .metric-item { font-size: 15px; color: var(--text-dark); font-weight: 500; }
+        .metric-item strong { 
+            font-weight: 600; font-size: 11px; text-transform: uppercase; 
+            color: var(--accent-blue); display: block; margin-bottom: 5px; letter-spacing: 0.5px; 
+        }
+
+        /* Floating Action Buttons */
+        .controls { display: flex; justify-content: center; align-items: center; gap: 30px; margin-top: 40px; z-index: 50; }
+        
+        .action-button { 
+            width: 70px; height: 70px; border-radius: 50%; background: #ffffff; border: none; 
+            display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+        
+        .action-button svg { width: 26px; height: 26px; transition: all 0.2s ease; }
+        .action-button:hover { transform: scale(1.1) translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,0.1); }
+        .action-button:active { transform: scale(0.95); }
+        
+        .btn-keep-left svg, .btn-keep-right svg { stroke: var(--accent-blue); fill: transparent; }
+        .btn-keep-left:hover, .btn-keep-right:hover { background: #f0f9ff; }
+        
+        .btn-skip-center { width: 85px; height: 85px; }
+        .btn-skip-center svg { stroke: var(--text-muted); width: 32px; height: 32px; }
+        .btn-skip-center:hover { background: #fef2f2; }
+        .btn-skip-center:hover svg { stroke: var(--accent-red); }
+
+        /* BUTTERY SMOOTH SWIPE ANIMATIONS */
+        @keyframes swipeLeft { 0% { transform: translate(0, 0) rotate(0deg); opacity: 1; } 100% { transform: translate(-60vw, 5vh) rotate(-15deg); opacity: 0; } }
+        @keyframes swipeRight { 0% { transform: translate(0, 0) rotate(0deg); opacity: 1; } 100% { transform: translate(60vw, 5vh) rotate(15deg); opacity: 0; } }
+        @keyframes dropDown { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(30vh) scale(0.9); opacity: 0; filter: blur(5px); } }
+
+        .anim-swipe-left { animation: swipeLeft 0.9s cubic-bezier(0.25, 0.8, 0.25, 1) forwards !important; pointer-events: none; z-index: 100;}
+        .anim-swipe-right { animation: swipeRight 0.9s cubic-bezier(0.25, 0.8, 0.25, 1) forwards !important; pointer-events: none; z-index: 100;}
+        .anim-drop { animation: dropDown 0.9s cubic-bezier(0.25, 0.8, 0.25, 1) forwards !important; pointer-events: none; z-index: 99;}
+
+        /* Shortlist Mode Styling */
+        .saved-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; width: 100%; margin: 40px auto; }
+        
+        .saved-card { 
+            background: var(--card-bg); border: 1px solid rgba(255,255,255,0.6);
+            border-radius: 35px 12px 35px 12px; padding: 30px 25px;
+            transition: all 0.3s ease, opacity 0.3s ease; box-shadow: var(--shadow-soft);
+            position: relative; display: flex; flex-direction: column; align-items: center; text-align: center;
+        }
+        
+        .saved-card:hover { transform: translateY(-5px); background: var(--card-hover); box-shadow: 0 15px 35px rgba(2, 132, 199, 0.12); }
+        
+        .saved-card .saved-logo { 
+            width: 80px; height: 80px; border-radius: 50%; object-fit: contain; background: #fff; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 15px; border: 3px solid #fff;
+        }
+        
+        .saved-card h3 { font-size: 20px; font-weight: 700; color: var(--text-dark); margin-bottom: 5px; padding-right: 15px; }
+        .saved-card .rank-badge { font-size: 12px; font-weight: 600; color: var(--accent-blue); background: #ffffff; padding: 4px 10px; border-radius: 12px; display: inline-block; margin-bottom: 20px; }
+        
+        .saved-details { width: 100%; display: flex; flex-direction: column; gap: 8px; text-align: left; }
+        .saved-details p { font-size: 14px; color: var(--text-muted); display: flex; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 6px; }
+        .saved-details p strong { color: var(--text-dark); font-weight: 600; }
+
+        .remove-item-btn {
+            position: absolute; top: 20px; right: 20px; background: transparent; border: none;
+            color: var(--text-muted); font-size: 18px; font-weight: 600; cursor: pointer;
+            transition: color 0.2s ease, transform 0.2s ease; line-height: 1;
+        }
+        .remove-item-btn:hover { color: var(--accent-red); transform: scale(1.15); }
+
+        .clear-btn { 
+            background: #ffffff; color: var(--text-dark); border: 1px solid rgba(0,0,0,0.1); 
+            padding: 12px 30px; border-radius: 30px; cursor: pointer; font-weight: 600; font-size: 14px; 
+            display: block; margin: 0 auto 30px auto; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .clear-btn:hover { background: #fef2f2; color: var(--accent-red); border-color: #fca5a5; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Soft Light Blue Background Blobs -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <!-- THE MASCOT (Drop) -->
+    <div id="mascot">
+        <svg width="45" height="45" viewBox="0 0 24 24" fill="var(--accent-blue)" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 21.5c-3.3 0-6-2.7-6-6 0-3 5-9.6 5.6-10.4.2-.2.6-.2.8 0 .6.8 5.6 7.4 5.6 10.4 0 3.3-2.7 6-6 6z"/>
+            <!-- Mascot Face -->
+            <circle cx="9.5" cy="15" r="1.2" fill="#fff"/>
+            <circle cx="14.5" cy="15" r="1.2" fill="#fff"/>
+            <path d="M10.5 17.5c.5.5 1.5.5 3 0" stroke="#fff" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+        </svg>
+    </div>
+
+    <!-- INTRO CUTSCENE SCREEN -->
+    <div id="intro-bg"></div>
+    <div id="intro-content">
+        <h1>Drowning in options?</h1>
+        <p>University hunting is hard. Let our little drop guide you through the noise to find your perfect campus match.</p>
+        <button class="start-btn" onclick="startApp()">Start Here</button>
+    </div>
+
+    <!-- MAIN APP WRAPPER -->
+    <div id="main-app">
+        <nav>
+            <button id="btn-compare" class="nav-btn active" onclick="switchTab('compare')">Compare</button>
+            <button id="btn-saved" class="nav-btn" onclick="switchTab('saved')">Shortlist</button>
+        </nav>
+
+        <!-- MODE 1: COMPARE -->
+        <div id="compare-view" class="container">
+            <div class="hero" id="hero-text">
+                <h1>Find your match.</h1>
+                <p>Tap a card directly or use the buttons below to choose your favorite profile based on your requirements.</p>
+            </div>
+
+            <div class="board" id="board">
+                <!-- Cards dynamically injected via JS -->
+            </div>
+
+            <div class="controls" id="controls">
+                <button class="action-button btn-keep-left" onclick="processChoice(1)" title="Keep Left">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
+                </button>
+                <button class="action-button btn-skip-center" onclick="processChoice(0)" title="Drop Both">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+                <button class="action-button btn-keep-right" onclick="processChoice(2)" title="Keep Right">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- MODE 2: SAVED LIST -->
+        <div id="saved-view" class="container hidden">
+            <div class="hero">
+                <h1>Your Shortlist.</h1>
+                <p>Review the university profiles you've selected.</p>
+            </div>
+            <button class="clear-btn" onclick="clearSaved()">Restart Match Process</button>
+            <div class="saved-grid" id="saved-grid"></div>
+        </div>
+    </div>
+
+    <script>
+        // Start App Animation Sequence
+        function startApp() {
+            // Hide intro text
+            document.getElementById('intro-content').classList.add('hidden-content');
+            // Move mascot
+            document.getElementById('mascot').classList.add('nav-mode');
+            
+            // Fade in app and fade out solid white bg
+            setTimeout(() => {
+                document.getElementById('intro-bg').classList.add('hidden-bg');
+                document.getElementById('main-app').classList.add('visible-app');
+            }, 500);
+        }
+
+        let db = [
+            { name: "UPenn", rank: "Rank #6", campus: "Urban", size: "10,000", intlAcceptance: "4%", cost: "$85k/yr", testReq: "Required" },
+            { name: "UChicago", rank: "Rank #12", campus: "Urban", size: "7,600", intlAcceptance: "5%", cost: "$86k/yr", testReq: "Test-Optional" },
+            { name: "UC Berkeley", rank: "Rank #15", campus: "Urban", size: "32,000", intlAcceptance: "9%", cost: "$75k/yr", testReq: "Test-Blind" },
+            { name: "NYU", rank: "Rank #35", campus: "Urban", size: "29,000", intlAcceptance: "12%", cost: "$90k/yr", testReq: "Test-Optional" },
+            { name: "Harvard", rank: "Rank #3", campus: "Urban", size: "7,200", intlAcceptance: "3%", cost: "$82k/yr", testReq: "Required" },
+            { name: "Stanford", rank: "Rank #3", campus: "Suburban", size: "7,700", intlAcceptance: "3%", cost: "$82k/yr", testReq: "Required" },
+            { name: "Columbia", rank: "Rank #12", campus: "Urban", size: "8,800", intlAcceptance: "4%", cost: "$85k/yr", testReq: "Test-Optional" },
+            { name: "Duke", rank: "Rank #7", campus: "Suburban", size: "6,500", intlAcceptance: "5%", cost: "$83k/yr", testReq: "Test-Optional" },
+            { name: "Cornell", rank: "Rank #12", campus: "Rural", size: "15,000", intlAcceptance: "8%", cost: "$84k/yr", testReq: "Test-Optional" },
+            { name: "MIT", rank: "Rank #2", campus: "Urban", size: "4,600", intlAcceptance: "4%", cost: "$79k/yr", testReq: "Required" },
+            { name: "Johns Hopkins", rank: "Rank #9", campus: "Urban", size: "6,000", intlAcceptance: "7%", cost: "$82k/yr", testReq: "Test-Optional" },
+            { name: "Northwestern", rank: "Rank #10", campus: "Suburban", size: "8,000", intlAcceptance: "6%", cost: "$83k/yr", testReq: "Test-Optional" },
+            { name: "Brown Univ", rank: "Rank #13", campus: "Urban", size: "7,000", intlAcceptance: "5%", cost: "$84k/yr", testReq: "Required" },
+            { name: "Vanderbilt", rank: "Rank #13", campus: "Urban", size: "7,100", intlAcceptance: "6%", cost: "$80k/yr", testReq: "Test-Optional" },
+            { name: "Rice Univ", rank: "Rank #15", campus: "Urban", size: "4.2k", intlAcceptance: "8%", cost: "$76k/yr", testReq: "Test-Optional" },
+            { name: "Dartmouth", rank: "Rank #18", campus: "Rural", size: "4.5k", intlAcceptance: "5%", cost: "$83k/yr", testReq: "Required" },
+            { name: "WUSTL", rank: "Rank #24", campus: "Suburban", size: "7.6k", intlAcceptance: "10%", cost: "$82k/yr", testReq: "Test-Optional" },
+            { name: "Notre Dame", rank: "Rank #20", campus: "Suburban", size: "8.9k", intlAcceptance: "8%", cost: "$80k/yr", testReq: "Test-Optional" },
+            { name: "UCLA", rank: "Rank #15", campus: "Urban", size: "32,000", intlAcceptance: "8%", cost: "$71k/yr", testReq: "Test-Blind" },
+            { name: "Emory Univ", rank: "Rank #24", campus: "Suburban", size: "7.1k", intlAcceptance: "12%", cost: "$79k/yr", testReq: "Test-Optional" },
+            { name: "Georgetown", rank: "Rank #22", campus: "Urban", size: "7.5k", intlAcceptance: "11%", cost: "$82k/yr", testReq: "Required" },
+            { name: "UMich Ann Arbor", rank: "Rank #21", campus: "Urban", size: "32,000", intlAcceptance: "15%", cost: "$72k/yr", testReq: "Test-Optional" },
+            { name: "Carnegie Mellon", rank: "Rank #24", campus: "Urban", size: "7.3k", intlAcceptance: "10%", cost: "$81k/yr", testReq: "Test-Optional" },
+            { name: "UVA", rank: "Rank #24", campus: "Suburban", size: "17,000", intlAcceptance: "16%", cost: "$73k/yr", testReq: "Test-Optional" },
+            { name: "USC", rank: "Rank #28", campus: "Urban", size: "20,000", intlAcceptance: "11%", cost: "$85k/yr", testReq: "Test-Optional" },
+            { name: "Univ of Florida", rank: "Rank #28", campus: "Suburban", size: "34,000", intlAcceptance: "20%", cost: "$45k/yr", testReq: "Required" },
+            { name: "UNC Chapel Hill", rank: "Rank #22", campus: "Suburban", size: "19,000", intlAcceptance: "14%", cost: "$55k/yr", testReq: "Test-Optional" },
+            { name: "UCSD", rank: "Rank #28", campus: "Urban", size: "33,000", intlAcceptance: "25%", cost: "$68k/yr", testReq: "Test-Blind" },
+            { name: "UC Davis", rank: "Rank #28", campus: "Suburban", size: "31,000", intlAcceptance: "35%", cost: "$68k/yr", testReq: "Test-Blind" },
+            { name: "UT Austin", rank: "Rank #32", campus: "Urban", size: "40,000", intlAcceptance: "22%", cost: "$60k/yr", testReq: "Required" },
+            { name: "Georgia Tech", rank: "Rank #33", campus: "Urban", size: "17,000", intlAcceptance: "13%", cost: "$52k/yr", testReq: "Required" },
+            { name: "UC Irvine", rank: "Rank #33", campus: "Suburban", size: "29,000", intlAcceptance: "21%", cost: "$68k/yr", testReq: "Test-Blind" },
+            { name: "UCSB", rank: "Rank #35", campus: "Suburban", size: "23,000", intlAcceptance: "23%", cost: "$68k/yr", testReq: "Test-Blind" },
+            { name: "Boston College", rank: "Rank #39", campus: "Suburban", size: "9.5k", intlAcceptance: "15%", cost: "$82k/yr", testReq: "Test-Optional" },
+            { name: "Tufts Univ", rank: "Rank #40", campus: "Suburban", size: "6.6k", intlAcceptance: "9%", cost: "$84k/yr", testReq: "Test-Optional" },
+            { name: "Rutgers NB", rank: "Rank #40", campus: "Suburban", size: "36,000", intlAcceptance: "45%", cost: "$52k/yr", testReq: "Test-Optional" },
+            { name: "Univ of Washington", rank: "Rank #40", campus: "Urban", size: "36,000", intlAcceptance: "42%", cost: "$61k/yr", testReq: "Test-Optional" },
+            { name: "Boston Univ", rank: "Rank #43", campus: "Urban", size: "18,000", intlAcceptance: "16%", cost: "$83k/yr", testReq: "Test-Optional" },
+            { name: "UIUC", rank: "Rank #35", campus: "Suburban", size: "34,000", intlAcceptance: "38%", cost: "$55k/yr", testReq: "Test-Optional" },
+            { name: "Wisconsin Madison", rank: "Rank #35", campus: "Urban", size: "35,000", intlAcceptance: "33%", cost: "$58k/yr", testReq: "Test-Optional" },
+            { name: "Ohio State Univ", rank: "Rank #41", campus: "Urban", size: "46k", intlAcceptance: "35%", cost: "$56k/yr", testReq: "Test-Optional" },
+            { name: "Lehigh University", rank: "Rank #46", campus: "Suburban", size: "5.9k", intlAcceptance: "14%", cost: "$81k/yr", testReq: "Test-Optional" },
+            { name: "Northeastern Univ", rank: "Rank #46", campus: "Urban", size: "17k", intlAcceptance: "13%", cost: "$86k/yr", testReq: "Test-Optional" },
+            { name: "Univ of Georgia", rank: "Rank #46", campus: "Suburban", size: "32k", intlAcceptance: "31%", cost: "$48k/yr", testReq: "Required" },
+            { name: "Univ of Rochester", rank: "Rank #46", campus: "Suburban", size: "6.5k", intlAcceptance: "19%", cost: "$87k/yr", testReq: "Test-Optional" },
+            { name: "Case Western", rank: "Rank #51", campus: "Urban", size: "6.5k", intlAcceptance: "22%", cost: "$85k/yr", testReq: "Test-Optional" },
+            { name: "Florida State (FSU)", rank: "Rank #51", campus: "Suburban", size: "32k", intlAcceptance: "35%", cost: "$42k/yr", testReq: "Required" },
+            { name: "Texas A&M", rank: "Rank #51", campus: "Suburban", size: "60k", intlAcceptance: "28%", cost: "$58k/yr", testReq: "Test-Optional" },
+            { name: "Virginia Tech", rank: "Rank #51", campus: "Suburban", size: "31k", intlAcceptance: "42%", cost: "$54k/yr", testReq: "Test-Optional" },
+            { name: "Wake Forest", rank: "Rank #51", campus: "Suburban", size: "5.4k", intlAcceptance: "15%", cost: "$85k/yr", testReq: "Test-Optional" },
+            { name: "William & Mary", rank: "Rank #51", campus: "Suburban", size: "7k", intlAcceptance: "24%", cost: "$63k/yr", testReq: "Test-Optional" },
+            { name: "UC Merced", rank: "Rank #57", campus: "Rural", size: "8.3k", intlAcceptance: "45%", cost: "$68k/yr", testReq: "Test-Blind" },
+            { name: "Villanova Univ", rank: "Rank #57", campus: "Suburban", size: "7k", intlAcceptance: "18%", cost: "$84k/yr", testReq: "Test-Optional" },
+            { name: "George Washington", rank: "Rank #59", campus: "Urban", size: "11k", intlAcceptance: "25%", cost: "$82k/yr", testReq: "Test-Optional" },
+            { name: "Penn State", rank: "Rank #59", campus: "Suburban", size: "42k", intlAcceptance: "38%", cost: "$58k/yr", testReq: "Test-Optional" },
+            { name: "Santa Clara Univ", rank: "Rank #59", campus: "Suburban", size: "6.5k", intlAcceptance: "20%", cost: "$81k/yr", testReq: "Test-Optional" },
+            { name: "Stony Brook (SUNY)", rank: "Rank #59", campus: "Suburban", size: "18k", intlAcceptance: "35%", cost: "$46k/yr", testReq: "Test-Optional" },
+            { name: "Univ of Minnesota", rank: "Rank #59", campus: "Urban", size: "41k", intlAcceptance: "40%", cost: "$54k/yr", testReq: "Test-Optional" },
+            { name: "Michigan State", rank: "Rank #64", campus: "Suburban", size: "41k", intlAcceptance: "45%", cost: "$55k/yr", testReq: "Test-Optional" },
+            { name: "NC State", rank: "Rank #64", campus: "Urban", size: "28k", intlAcceptance: "30%", cost: "$49k/yr", testReq: "Test-Optional" },
+            { name: "Rensselaer (RPI)", rank: "Rank #64", campus: "Suburban", size: "5.7k", intlAcceptance: "38%", cost: "$83k/yr", testReq: "Test-Optional" },
+            { name: "UMass Amherst", rank: "Rank #64", campus: "Suburban", size: "23k", intlAcceptance: "42%", cost: "$56k/yr", testReq: "Test-Optional" },
+            { name: "Univ of Miami", rank: "Rank #64", campus: "Suburban", size: "13k", intlAcceptance: "16%", cost: "$88k/yr", testReq: "Test-Optional" },
+            { name: "Brandeis Univ", rank: "Rank #69", campus: "Suburban", size: "3.6k", intlAcceptance: "21%", cost: "$86k/yr", testReq: "Test-Optional" },
+            { name: "Tulane University", rank: "Rank #69", campus: "Urban", size: "7.2k", intlAcceptance: "12%", cost: "$85k/yr", testReq: "Test-Optional" },
+            { name: "Univ of Connecticut", rank: "Rank #69", campus: "Rural", size: "20k", intlAcceptance: "38%", cost: "$59k/yr", testReq: "Test-Optional" },
+            { name: "Univ of Pittsburgh", rank: "Rank #69", campus: "Urban", size: "20k", intlAcceptance: "42%", cost: "$56k/yr", testReq: "Test-Optional" },
+            { name: "Binghamton (SUNY)", rank: "Rank #73", campus: "Suburban", size: "14k", intlAcceptance: "32%", cost: "$45k/yr", testReq: "Test-Optional" },
+            { name: "Indiana Univ", rank: "Rank #73", campus: "Suburban", size: "38k", intlAcceptance: "48%", cost: "$56k/yr", testReq: "Test-Optional" },
+            { name: "Clemson Univ", rank: "Rank #75", campus: "Suburban", size: "23k", intlAcceptance: "35%", cost: "$54k/yr", testReq: "Test-Optional" },
+            { name: "American University", rank: "Rank #76", campus: "Urban", size: "8k", intlAcceptance: "35%", cost: "$82k/yr", testReq: "Test-Optional" },
+            { name: "Baylor University", rank: "Rank #77", campus: "Urban", size: "15k", intlAcceptance: "42%", cost: "$78k/yr", testReq: "Test-Optional" },
+            { name: "Colorado School of Mines", rank: "Rank #78", campus: "Suburban", size: "5.5k", intlAcceptance: "30%", cost: "$62k/yr", testReq: "Test-Optional" },
+            { name: "Pepperdine University", rank: "Rank #79", campus: "Suburban", size: "3.5k", intlAcceptance: "25%", cost: "$85k/yr", testReq: "Test-Optional" },
+            { name: "Syracuse University", rank: "Rank #80", campus: "Urban", size: "15k", intlAcceptance: "40%", cost: "$84k/yr", testReq: "Test-Optional" },
+            { name: "Stevens Institute of Tech", rank: "Rank #81", campus: "Urban", size: "4.1k", intlAcceptance: "22%", cost: "$80k/yr", testReq: "Test-Optional" },
+            { name: "TCU", rank: "Rank #82", campus: "Suburban", size: "10k", intlAcceptance: "35%", cost: "$81k/yr", testReq: "Test-Optional" },
+            { name: "UC Santa Cruz", rank: "Rank #83", campus: "Suburban", size: "17k", intlAcceptance: "45%", cost: "$71k/yr", testReq: "Test-Blind" },
+            { name: "Univ of Colorado Boulder", rank: "Rank #84", campus: "Urban", size: "33k", intlAcceptance: "60%", cost: "$60k/yr", testReq: "Test-Optional" },
+            { name: "Univ of Delaware", rank: "Rank #85", campus: "Suburban", size: "18k", intlAcceptance: "55%", cost: "$55k/yr", testReq: "Test-Optional" },
+            { name: "Univ of South Florida", rank: "Rank #86", campus: "Urban", size: "38k", intlAcceptance: "40%", cost: "$45k/yr", testReq: "Required" },
+            { name: "Howard University", rank: "Rank #87", campus: "Urban", size: "8.5k", intlAcceptance: "30%", cost: "$52k/yr", testReq: "Test-Optional" },
+            { name: "Gonzaga University", rank: "Rank #88", campus: "Urban", size: "5.2k", intlAcceptance: "45%", cost: "$75k/yr", testReq: "Test-Optional" },
+            { name: "Marquette University", rank: "Rank #89", campus: "Urban", size: "7.5k", intlAcceptance: "55%", cost: "$68k/yr", testReq: "Test-Optional" },
+            { name: "New Jersey Inst of Tech", rank: "Rank #90", campus: "Urban", size: "9k", intlAcceptance: "48%", cost: "$54k/yr", testReq: "Test-Optional" },
+            { name: "Univ at Buffalo (SUNY)", rank: "Rank #91", campus: "Suburban", size: "21k", intlAcceptance: "50%", cost: "$48k/yr", testReq: "Test-Optional" },
+            { name: "University of Iowa", rank: "Rank #92", campus: "Urban", size: "21k", intlAcceptance: "65%", cost: "$53k/yr", testReq: "Test-Optional" },
+            { name: "University of Oregon", rank: "Rank #93", campus: "Urban", size: "18k", intlAcceptance: "70%", cost: "$62k/yr", testReq: "Test-Optional" },
+            { name: "University of San Diego", rank: "Rank #94", campus: "Urban", size: "5.5k", intlAcceptance: "40%", cost: "$78k/yr", testReq: "Test-Optional" },
+            { name: "University of Utah", rank: "Rank #95", campus: "Urban", size: "26k", intlAcceptance: "65%", cost: "$51k/yr", testReq: "Test-Optional" },
+            { name: "Auburn University", rank: "Rank #96", campus: "Suburban", size: "25k", intlAcceptance: "45%", cost: "$52k/yr", testReq: "Test-Optional" },
+            { name: "Drexel University", rank: "Rank #97", campus: "Urban", size: "14k", intlAcceptance: "55%", cost: "$79k/yr", testReq: "Test-Optional" },
+            { name: "Loyola Marymount Univ", rank: "Rank #98", campus: "Suburban", size: "7.1k", intlAcceptance: "35%", cost: "$81k/yr", testReq: "Test-Optional" },
+            { name: "Miami University (OH)", rank: "Rank #99", campus: "Rural", size: "17k", intlAcceptance: "60%", cost: "$55k/yr", testReq: "Test-Optional" },
+            { name: "Rochester Inst of Tech", rank: "Rank #100", campus: "Suburban", size: "13k", intlAcceptance: "48%", cost: "$72k/yr", testReq: "Test-Optional" },
+            { name: "Temple University", rank: "Rank #101", campus: "Urban", size: "25k", intlAcceptance: "55%", cost: "$52k/yr", testReq: "Test-Optional" },
+            { name: "University of Arizona", rank: "Rank #102", campus: "Urban", size: "38k", intlAcceptance: "75%", cost: "$58k/yr", testReq: "Test-Optional" },
+            { name: "Arizona State (ASU)", rank: "Rank #103", campus: "Urban", size: "65k", intlAcceptance: "80%", cost: "$52k/yr", testReq: "Test-Optional" },
+            { name: "George Mason Univ", rank: "Rank #104", campus: "Suburban", size: "27k", intlAcceptance: "60%", cost: "$55k/yr", testReq: "Test-Optional" },
+            { name: "San Diego State (SDSU)", rank: "Rank #105", campus: "Urban", size: "31k", intlAcceptance: "40%", cost: "$50k/yr", testReq: "Test-Blind" },
+            { name: "SMU", rank: "Rank #106", campus: "Urban", size: "7k", intlAcceptance: "35%", cost: "$85k/yr", testReq: "Test-Optional" },
+            { name: "University of Denver", rank: "Rank #107", campus: "Urban", size: "6k", intlAcceptance: "45%", cost: "$78k/yr", testReq: "Test-Optional" },
+            { name: "Univ of San Francisco", rank: "Rank #108", campus: "Urban", size: "6k", intlAcceptance: "50%", cost: "$76k/yr", testReq: "Test-Optional" },
+            { name: "Univ of South Carolina", rank: "Rank #109", campus: "Urban", size: "27k", intlAcceptance: "55%", cost: "$55k/yr", testReq: "Test-Optional" },
+            { name: "University of Vermont", rank: "Rank #110", campus: "Suburban", size: "11k", intlAcceptance: "48%", cost: "$62k/yr", testReq: "Test-Optional" },
+            { name: "Worcester Poly (WPI)", rank: "Rank #111", campus: "Urban", size: "5.2k", intlAcceptance: "38%", cost: "$80k/yr", testReq: "Test-Optional" },
+            { name: "Florida Int Univ (FIU)", rank: "Rank #112", campus: "Urban", size: "46k", intlAcceptance: "50%", cost: "$40k/yr", testReq: "Required" },
+            { name: "Hofstra University", rank: "Rank #113", campus: "Suburban", size: "6k", intlAcceptance: "55%", cost: "$75k/yr", testReq: "Test-Optional" },
+            { name: "DePaul University", rank: "Rank #114", campus: "Urban", size: "14k", intlAcceptance: "60%", cost: "$65k/yr", testReq: "Test-Optional" },
+            { name: "Chapman University", rank: "Rank #115", campus: "Suburban", size: "7.6k", intlAcceptance: "40%", cost: "$83k/yr", testReq: "Test-Optional" },
+            { name: "University of Dayton", rank: "Rank #135", campus: "Suburban", size: "8.2k", intlAcceptance: "65%", cost: "$62k/yr", testReq: "Test-Optional" },
+            { name: "Clarkson University", rank: "Rank #136", campus: "Rural", size: "3.1k", intlAcceptance: "52%", cost: "$71k/yr", testReq: "Test-Optional" },
+            { name: "Oregon State Univ", rank: "Rank #137", campus: "Suburban", size: "26k", intlAcceptance: "72%", cost: "$51k/yr", testReq: "Test-Optional" },
+            { name: "Saint Louis University", rank: "Rank #138", campus: "Urban", size: "8k", intlAcceptance: "58%", cost: "$68k/yr", testReq: "Test-Optional" },
+            { name: "Univ of Cincinnati", rank: "Rank #139", campus: "Urban", size: "29k", intlAcceptance: "68%", cost: "$46k/yr", testReq: "Test-Optional" },
+            { name: "University of Kentucky", rank: "Rank #140", campus: "Urban", size: "23k", intlAcceptance: "78%", cost: "$49k/yr", testReq: "Test-Optional" },
+            { name: "Univ of Oklahoma", rank: "Rank #141", campus: "Suburban", size: "22k", intlAcceptance: "70%", cost: "$45k/yr", testReq: "Test-Optional" },
+            { name: "Wayne State Univ", rank: "Rank #142", campus: "Urban", size: "16k", intlAcceptance: "65%", cost: "$41k/yr", testReq: "Test-Optional" },
+            { name: "Kansas State Univ", rank: "Rank #143", campus: "Suburban", size: "15k", intlAcceptance: "82%", cost: "$40k/yr", testReq: "Test-Optional" },
+            { name: "Michigan Tech", rank: "Rank #144", campus: "Suburban", size: "6k", intlAcceptance: "60%", cost: "$53k/yr", testReq: "Test-Optional" },
+            { name: "CUNY City College", rank: "Rank #147", campus: "Urban", size: "12k", intlAcceptance: "40%", cost: "$35k/yr", testReq: "Test-Blind" },
+            { name: "Thomas Jefferson Univ", rank: "Rank #150", campus: "Urban", size: "3.7k", intlAcceptance: "58%", cost: "$63k/yr", testReq: "Test-Optional" },
+            { name: "Univ of Arkansas", rank: "Rank #151", campus: "Suburban", size: "25k", intlAcceptance: "75%", cost: "$44k/yr", testReq: "Test-Optional" },
+            { name: "Univ of Mississippi", rank: "Rank #152", campus: "Rural", size: "19k", intlAcceptance: "78%", cost: "$43k/yr", testReq: "Test-Optional" },
+            { name: "Rowan University", rank: "Rank #153", campus: "Suburban", size: "16k", intlAcceptance: "65%", cost: "$40k/yr", testReq: "Test-Optional" },
+            { name: "Univ of Central Florida", rank: "Rank #154", campus: "Suburban", size: "60k", intlAcceptance: "42%", cost: "$39k/yr", testReq: "Required" },
+            { name: "Ohio University", rank: "Rank #155", campus: "Rural", size: "18k", intlAcceptance: "80%", cost: "$42k/yr", testReq: "Test-Optional" },
+            { name: "Univ of Houston", rank: "Rank #156", campus: "Urban", size: "38k", intlAcceptance: "62%", cost: "$43k/yr", testReq: "Test-Optional" },
+            { name: "Univ of Maryland BC", rank: "Rank #157", campus: "Suburban", size: "10k", intlAcceptance: "68%", cost: "$45k/yr", testReq: "Test-Optional" },
+            { name: "Univ of the Pacific", rank: "Rank #158", campus: "Suburban", size: "3.5k", intlAcceptance: "60%", cost: "$74k/yr", testReq: "Test-Optional" },
+            { name: "Seton Hall University", rank: "Rank #159", campus: "Suburban", size: "6k", intlAcceptance: "72%", cost: "$70k/yr", testReq: "Test-Optional" },
+            { name: "San Jose State (SJSU)", rank: "Rank #160", campus: "Urban", size: "28k", intlAcceptance: "65%", cost: "$38k/yr", testReq: "Test-Blind" },
+            { name: "Adelphi University", rank: "Rank #161", campus: "Suburban", size: "5.2k", intlAcceptance: "68%", cost: "$64k/yr", testReq: "Test-Optional" },
+            { name: "Texas Tech University", rank: "Rank #162", campus: "Urban", size: "33k", intlAcceptance: "68%", cost: "$41k/yr", testReq: "Test-Optional" },
+            { name: "Univ of Rhode Island", rank: "Rank #163", campus: "Suburban", size: "14k", intlAcceptance: "72%", cost: "$50k/yr", testReq: "Test-Optional" },
+            { name: "Biola University", rank: "Rank #165", campus: "Suburban", size: "3.6k", intlAcceptance: "58%", cost: "$65k/yr", testReq: "Test-Optional" },
+            { name: "UT Dallas", rank: "Rank #166", campus: "Suburban", size: "21k", intlAcceptance: "48%", cost: "$45k/yr", testReq: "Test-Optional" },
+            { name: "Louisiana State (LSU)", rank: "Rank #167", campus: "Urban", size: "30k", intlAcceptance: "68%", cost: "$42k/yr", testReq: "Test-Optional" },
+            { name: "University of La Verne", rank: "Rank #168", campus: "Suburban", size: "4.5k", intlAcceptance: "55%", cost: "$62k/yr", testReq: "Test-Optional" },
+            { name: "Mercer University", rank: "Rank #169", campus: "Suburban", size: "5k", intlAcceptance: "62%", cost: "$55k/yr", testReq: "Test-Optional" },
+            { name: "Loyola University Chicago", rank: "Rank #170", campus: "Urban", size: "11k", intlAcceptance: "60%", cost: "$68k/yr", testReq: "Test-Optional" },
+            { name: "San Francisco State", rank: "Rank #171", campus: "Urban", size: "22k", intlAcceptance: "52%", cost: "$39k/yr", testReq: "Test-Blind" },
+            { name: "VCU (Virginia Comm.)", rank: "Rank #172", campus: "Urban", size: "21k", intlAcceptance: "70%", cost: "$41k/yr", testReq: "Test-Optional" },
+            { name: "Univ of New Mexico", rank: "Rank #173", campus: "Urban", size: "16k", intlAcceptance: "78%", cost: "$38k/yr", testReq: "Test-Optional" },
+            { name: "Belmont University", rank: "Rank #174", campus: "Urban", size: "7k", intlAcceptance: "65%", cost: "$58k/yr", testReq: "Test-Optional" },
+            { name: "Ball State University", rank: "Rank #176", campus: "Suburban", size: "15k", intlAcceptance: "80%", cost: "$39k/yr", testReq: "Test-Optional" },
+            { name: "East Carolina Univ", rank: "Rank #177", campus: "Suburban", size: "23k", intlAcceptance: "75%", cost: "$38k/yr", testReq: "Test-Optional" },
+            { name: "Univ of Colorado Denver", rank: "Rank #178", campus: "Urban", size: "11k", intlAcceptance: "72%", cost: "$44k/yr", testReq: "Test-Optional" },
+            { name: "Texas State Univ", rank: "Rank #179", campus: "Suburban", size: "33k", intlAcceptance: "70%", cost: "$37k/yr", testReq: "Test-Optional" },
+            { name: "Univ of North Carolina G.", rank: "Rank #180", campus: "Urban", size: "15k", intlAcceptance: "75%", cost: "$36k/yr", testReq: "Test-Optional" },
+            { name: "University of Toledo", rank: "Rank #181", campus: "Urban", size: "12k", intlAcceptance: "82%", cost: "$35k/yr", testReq: "Test-Optional" },
+            { name: "Central Michigan Univ", rank: "Rank #182", campus: "Suburban", size: "12k", intlAcceptance: "80%", cost: "$34k/yr", testReq: "Test-Optional" },
+            { name: "Univ of Texas Arlington", rank: "Rank #183", campus: "Urban", size: "30k", intlAcceptance: "65%", cost: "$40k/yr", testReq: "Test-Optional" },
+            { name: "Northern Arizona Univ", rank: "Rank #184", campus: "Suburban", size: "21k", intlAcceptance: "85%", cost: "$39k/yr", testReq: "Test-Optional" },
+            { name: "Western Michigan Univ", rank: "Rank #185", campus: "Suburban", size: "15k", intlAcceptance: "78%", cost: "$36k/yr", testReq: "Test-Optional" },
+            { name: "Univ of Missouri KC", rank: "Rank #186", campus: "Urban", size: "8.5k", intlAcceptance: "70%", cost: "$35k/yr", testReq: "Test-Optional" },
+            { name: "Georgia Southern Univ", rank: "Rank #187", campus: "Rural", size: "22k", intlAcceptance: "80%", cost: "$33k/yr", testReq: "Test-Optional" },
+            { name: "University of Memphis", rank: "Rank #188", campus: "Urban", size: "16k", intlAcceptance: "75%", cost: "$32k/yr", testReq: "Test-Optional" },
+            { name: "Indiana State Univ", rank: "Rank #189", campus: "Urban", size: "8k", intlAcceptance: "85%", cost: "$33k/yr", testReq: "Test-Optional" },
+            { name: "Univ of North Florida", rank: "Rank #190", campus: "Suburban", size: "14k", intlAcceptance: "72%", cost: "$34k/yr", testReq: "Test-Optional" },
+            { name: "Suffolk University", rank: "Rank #191", campus: "Urban", size: "4.3k", intlAcceptance: "58%", cost: "$63k/yr", testReq: "Test-Optional" },
+            { name: "Nova Southeastern", rank: "Rank #192", campus: "Suburban", size: "6.2k", intlAcceptance: "60%", cost: "$55k/yr", testReq: "Test-Optional" },
+            { name: "Pace University", rank: "Rank #193", campus: "Urban", size: "8k", intlAcceptance: "62%", cost: "$71k/yr", testReq: "Test-Optional" },
+            { name: "Lipscomb University", rank: "Rank #194", campus: "Suburban", size: "3k", intlAcceptance: "65%", cost: "$54k/yr", testReq: "Test-Optional" },
+            { name: "Rutgers Newark", rank: "Rank #195", campus: "Urban", size: "8.1k", intlAcceptance: "50%", cost: "$48k/yr", testReq: "Test-Optional" },
+            { name: "UMass Dartmouth", rank: "Rank #196", campus: "Suburban", size: "5.8k", intlAcceptance: "74%", cost: "$47k/yr", testReq: "Test-Optional" },
+            { name: "University of Akron", rank: "Rank #197", campus: "Urban", size: "11k", intlAcceptance: "85%", cost: "$32k/yr", testReq: "Test-Optional" },
+            { name: "Wichita State Univ", rank: "Rank #198", campus: "Urban", size: "12k", intlAcceptance: "88%", cost: "$30k/yr", testReq: "Test-Optional" },
+            { name: "Portland State Univ", rank: "Rank #199", campus: "Urban", size: "16k", intlAcceptance: "82%", cost: "$36k/yr", testReq: "Test-Optional" },
+            { name: "Cleveland State Univ", rank: "Rank #200", campus: "Urban", size: "11k", intlAcceptance: "85%", cost: "$33k/yr", testReq: "Test-Optional" }
+        ];
+
+        function getDomain(name) {
+            const domainMap = {
+                "UPenn": "upenn.edu", "UChicago": "uchicago.edu", "UC Berkeley": "berkeley.edu",
+                "NYU": "nyu.edu", "Harvard": "harvard.edu", "Stanford": "stanford.edu",
+                "Columbia": "columbia.edu", "Duke": "duke.edu", "Cornell": "cornell.edu",
+                "MIT": "mit.edu", "Johns Hopkins": "jhu.edu", "Northwestern": "northwestern.edu",
+                "Brown Univ": "brown.edu", "Vanderbilt": "vanderbilt.edu", "Rice Univ": "rice.edu",
+                "Dartmouth": "dartmouth.edu", "WUSTL": "wustl.edu", "Notre Dame": "nd.edu",
+                "UCLA": "ucla.edu", "Emory Univ": "emory.edu", "Georgetown": "georgetown.edu",
+                "UMich Ann Arbor": "umich.edu", "Carnegie Mellon": "cmu.edu", "UVA": "virginia.edu",
+                "USC": "usc.edu", "Univ of Florida": "ufl.edu", "UNC Chapel Hill": "unc.edu",
+                "UCSD": "ucsd.edu", "UC Davis": "ucdavis.edu", "UT Austin": "utexas.edu",
+                "Georgia Tech": "gatech.edu", "UC Irvine": "uci.edu", "UCSB": "ucsb.edu",
+                "Boston College": "bc.edu", "Tufts Univ": "tufts.edu", "Rutgers NB": "rutgers.edu",
+                "Univ of Washington": "washington.edu", "Boston Univ": "bu.edu", "UIUC": "illinois.edu",
+                "Wisconsin Madison": "wisc.edu", "Ohio State Univ": "osu.edu", "Lehigh University": "lehigh.edu",
+                "Northeastern Univ": "northeastern.edu", "Univ of Georgia": "uga.edu",
+                "Univ of Rochester": "rochester.edu", "Case Western": "case.edu",
+                "Florida State (FSU)": "fsu.edu", "Texas A&M": "tamu.edu", "Virginia Tech": "vt.edu",
+                "CUNY City College": "ccny.cuny.edu", "SMU": "smu.edu", "TCU": "tcu.edu"
+            };
+            if (domainMap[name]) return domainMap[name];
+            let clean = name.toLowerCase().replace(/university|univ|of|at|the|state|college|institute|tech|\s|\(|\)/g, '');
+            return clean + ".edu";
+        }
+
+        let savedColleges = JSON.parse(localStorage.getItem('myUnis')) || [];
+        let seenColleges = JSON.parse(localStorage.getItem('seenUnis')) || [];
+        let currentPair = [];
+
+        function renderCompare() {
+            let available = db.filter(u => !seenColleges.includes(u.name));
+            
+            if (available.length < 2) {
+                document.getElementById('hero-text').style.display = 'none';
+                document.getElementById('board').innerHTML = `<h2 style="margin: auto; text-align: center; width: 100%; font-size: 32px; color: var(--text-dark); font-family: var(--font-heading);">You've reviewed every university in the database.</h2>`;
+                document.getElementById('controls').style.display = 'none';
+                return;
+            }
+
+            available.sort(() => 0.5 - Math.random());
+            currentPair = [available[0], available[1]];
+
+            const board = document.getElementById('board');
+            board.innerHTML = createCardHTML(currentPair[0], 1) + createCardHTML(currentPair[1], 2);
+        }
+
+        function createCardHTML(uni, side) {
+            let size = uni.students || uni.size || "N/A"; 
+            let logoSrc = `https://logo.clearbit.com/${getDomain(uni.name)}`;
+            let fallbackSrc = `https://ui-avatars.com/api/?name=${encodeURIComponent(uni.name)}&background=e0f2fe&color=0ea5e9&size=200&rounded=true&font-size=0.33`;
+
+            return `
+                <div class="card" id="card-${side}" onclick="processChoice(${side})">
+                    <img class="card-logo" src="${logoSrc}" alt="${uni.name} Logo" onerror="this.onerror=null; this.src='${fallbackSrc}';">
+                    <div class="card-content">
+                        <h2>${uni.name} <span>${uni.rank}</span></h2>
+                        <div class="bio-metrics">
+                            <div class="metric-item">---------- Setting ----------<br>${uni.campus}</div>
+                            <div class="metric-item">-------- Undergrads --------<br>${size}</div>
+                            <div class="metric-item">-------- Intl Admit --------<br>${uni.intlAcceptance}</div>
+                            <div class="metric-item">---------- Cost/Yr ----------<br>${uni.cost}</div>
+                            <div class="metric-item" style="grid-column: span 2;">-------- Testing Policy --------<br>${uni.testReq}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function processChoice(actionCode) {
+            const card1 = document.getElementById('card-1');
+            const card2 = document.getElementById('card-2');
+            
+            document.querySelectorAll('.card, .action-button').forEach(el => el.style.pointerEvents = 'none');
+
+            if (actionCode === 1) { 
+                card1.classList.add('anim-swipe-left');
+                card2.classList.add('anim-drop');
+            } else if (actionCode === 2) { 
+                card2.classList.add('anim-swipe-right');
+                card1.classList.add('anim-drop');
+            } else { 
+                card1.classList.add('anim-drop');
+                card2.classList.add('anim-drop');
+            }
+
+            setTimeout(() => {
+                if (actionCode === 1 || actionCode === 2) {
+                    let selected = actionCode === 1 ? currentPair[0] : currentPair[1];
+                    if (!savedColleges.some(u => u.name === selected.name)) {
+                        savedColleges.push(selected);
+                    }
+                }
+                
+                seenColleges.push(currentPair[0].name, currentPair[1].name);
+                
+                localStorage.setItem('myUnis', JSON.stringify(savedColleges));
+                localStorage.setItem('seenUnis', JSON.stringify(seenColleges));
+                
+                renderCompare();
+                renderSaved();
+                
+                document.querySelectorAll('.card, .action-button').forEach(el => el.style.pointerEvents = 'auto');
+            }, 800);
+        }
+
+        function renderSaved() {
+            const grid = document.getElementById('saved-grid');
+            if (savedColleges.length === 0) {
+                grid.innerHTML = "<p style='color: var(--text-muted); text-align: center; grid-column: 1/-1; padding: 40px; font-size: 16px;'>No universities favorited yet.</p>";
+                return;
+            }
+
+            grid.innerHTML = savedColleges.map((uni, idx) => {
+                let logoSrc = `https://logo.clearbit.com/${getDomain(uni.name)}`;
+                let fallbackSrc = `https://ui-avatars.com/api/?name=${encodeURIComponent(uni.name)}&background=e0f2fe&color=0ea5e9&size=200&rounded=true&font-size=0.33`;
+                
+                return `
+                <div class="saved-card" id="saved-idx-${idx}">
+                    <button class="remove-item-btn" onclick="removeSingleItem(${idx})" title="Remove from Shortlist">✕</button>
+                    <img class="saved-logo" src="${logoSrc}" alt="${uni.name} Logo" onerror="this.onerror=null; this.src='${fallbackSrc}';">
+                    <h3>${uni.name}</h3>
+                    <div class="rank-badge">${uni.rank}</div>
+                    
+                    <div class="saved-details">
+                        <p>Campus <strong>${uni.campus}</strong></p>
+                        <p>Intl Admit <strong>${uni.intlAcceptance}</strong></p>
+                        <p>Standardized Tests <strong>${uni.testReq}</strong></p>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        function removeSingleItem(index) {
+            const cardDOM = document.getElementById(`saved-idx-${index}`);
+            if (cardDOM) {
+                cardDOM.style.opacity = '0';
+                cardDOM.style.transform = 'scale(0.9) translateY(10px)';
+                
+                setTimeout(() => {
+                    savedColleges.splice(index, 1);
+                    localStorage.setItem('myUnis', JSON.stringify(savedColleges));
+                    renderSaved();
+                }, 300);
+            }
+        }
+
+        function clearSaved() {
+            if(confirm("Are you sure you want to restart your search? This will clear everything.")) {
+                savedColleges = [];
+                seenColleges = [];
+                localStorage.clear();
+                document.getElementById('hero-text').style.display = 'block';
+                document.getElementById('controls').style.display = 'flex';
+                renderCompare();
+                renderSaved();
+            }
+        }
+
+        function switchTab(tab) {
+            document.getElementById('compare-view').classList.add('hidden');
+            document.getElementById('saved-view').classList.add('hidden');
+            document.getElementById('btn-compare').classList.remove('active');
+            document.getElementById('btn-saved').classList.remove('active');
+
+            document.getElementById(`${tab}-view`).classList.remove('hidden');
+            document.getElementById(`btn-${tab}`).classList.add('active');
+        }
+
+        // Initialize state behind intro screen
+        renderCompare();
+        renderSaved();
+        
+        // Auto-skip intro if they've already used the app
+        if(seenColleges.length > 0) {
+            document.getElementById('intro-bg').style.display = 'none';
+            document.getElementById('intro-content').style.display = 'none';
+            document.getElementById('mascot').classList.add('nav-mode');
+            document.getElementById('main-app').classList.add('visible-app');
+        }
+    </script>
+</body>
+</html>
